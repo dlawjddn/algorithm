@@ -46,6 +46,8 @@ int bfs(int sizeY, int sizeX){
     return 0;
 }
 int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0); cout.tie(0);
     cin>>test;
     for(int i=0; i<test; i++){
         int sizeY=0, sizeX =0, startY=0, startX=0;
