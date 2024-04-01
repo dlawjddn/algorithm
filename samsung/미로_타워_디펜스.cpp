@@ -13,15 +13,12 @@ void process1(int d, int time){
     for(int i=0; i<time; i++){
         int ny = y + moveY[d];
         int nx = x + moveX[d];
-        cout<<"ny: "<<ny<<" nx: "<<nx<<"\n";
-        cout<<"map[ny][nx]: "<<map[ny][nx]<<"\n";
         temp_cnt += map[ny][nx];
         map[ny][nx] = 0;
         y = ny;
         x = nx;
     }
     ans += temp_cnt;
-    //cout<<"p1: "<<ans<<"\n";
 }
 void make_list(){
     int y1 = 0;
@@ -69,6 +66,7 @@ void make_list(){
         x3 -= 1;
         y4 -= 1;
         x4 += 1;
+
     }   
 }
 void delete_seq(){
@@ -80,7 +78,6 @@ void delete_seq(){
         } else {
             if (con >= 4){
                 ans += (num * con);
-                //cout<<"after p1: "<<ans<<"\n";
                 for(int j = 1; j <= con; j++){
                     numbers.erase(numbers.begin() + i - j);
                 }
@@ -88,7 +85,6 @@ void delete_seq(){
                 i -= con;
                 num = numbers[i];
                 con = 1;
-                //cout<<"num: "<<num<<"\n";
                 again = true;
             }
             else{
@@ -99,19 +95,16 @@ void delete_seq(){
         if (i == numbers.size() - 1){
             if (con >= 4){
                 ans += (num * con);
-                //cout<<"after p1: "<<ans<<"\n";
-                for(int j = 1; j <= con; j++){
-                    numbers.erase(numbers.begin() + i - j);
+                for(int j = 1; j <= con; j++){ 
+                    // 인덱스 실수 했던 부분 이거 유념하기
+                    numbers.erase(numbers.end() - 1);
                 }
                 con = 0;
                 again = true;
             }
         }
     }
-    if (again) {
-        //cout<<"try again\n";
-        delete_seq();
-    }
+    if (again) delete_seq();
 }
 void remake(){
     vector<int> new_numbers;
@@ -137,21 +130,15 @@ void make_map(){
     memset(map, 0, sizeof(map));
     int max_size = size * size - 1; 
     if (numbers.size() < max_size){
-        //cout<<"need\n";
         int need = (size * size) - numbers.size();
         for(int i=0; i<need-1; i++){
             numbers.push_back(0);
         }
     } else {
-        //cout<<"over\n";
         int over = numbers.size() - max_size;
         for(int i=0; i<over; i++){
             numbers.pop_back();
         }
-        // for(int i=0; i<numbers.size(); i++){
-        //     cout<<numbers[i]<<" ";
-        // }
-        // cout<<"\n";
     }
     
     int y1 = 0;
@@ -204,38 +191,12 @@ int main() {
     }
     for(int i=0; i<round; i++){
         cin>>attack_d>>attack_t;
-        // for(int i=0; i<size; i++){
-        //     for(int j=0; j<size; j++){
-        //         cout<<map[i][j]<<" ";
-        //     }
-        //     cout<<"\n";
-        // }
-        // cout<<"\n";
         process1(attack_d, attack_t);
         make_list();
-        // for(int i=0; i<numbers.size(); i++){
-        //     cout<<numbers[i]<<" ";
-        // }
-        // cout<<"\n";
         delete_seq();
         remake();
         make_map();
-        // for(int i=0; i<size; i++){
-        //     for(int j=0; j<size; j++){
-        //         cout<<map[i][j]<<" ";
-        //     }
-        //     cout<<"\n";
-        // }
-        // cout<<"\n";
-        // cout<<ans<<"\n";
     }
-    // for(int i=0; i<size; i++){
-    //         for(int j=0; j<size; j++){
-    //             cout<<map[i][j]<<" ";
-    //         }
-    //         cout<<"\n";
-    //     }
-    // cout<<"\n"<<ans;
     cout<<ans;
     return 0;
 }
