@@ -4,6 +4,8 @@
 
 using namespace std;
 
+// 원트컷~!
+
 struct Favorite{
     int me, friends[4];
 };
