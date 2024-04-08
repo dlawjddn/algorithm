@@ -1,177 +1,180 @@
 #include <iostream>
-#include <queue>
+#include <vector>
 #include <algorithm>
+#include <numeric>
 
 using namespace std;
-struct Point{
-    int y, x, dir;
-};
-queue<Point> monster;
-queue<Point> egg;
-int monster_cnt[5][5][26], map[5][5][30], moveY[8]={-1,-1,0,1,1,1,0,-1}, moveX[8]={0,-1,-1,-1,0,1,1,1};
-int cnt=0, trial=0, packmanY=0, packmanX=0, ans=0;
-bool check_bound(int y, int x){
-    return y>=1 && y<=4 && x>=1 && x<=4;
 
-}
-void copy_monster(int t){
-    int now_cnt = monster.size();
-    for(int i=0; i<now_cnt; i++){
-        Point temp_monster = monster.front(); monster.pop();
-        monster.push(temp_monster);
-        egg.push(temp_monster);
-        //monster_cnt[temp_monster.y][temp_monster.x][t+2]++;
+vector<vector<vector<int> > > monster(4, vector<vector<int> >(4, vector<int>(8, 0)));
+vector<vector<vector<int> > > egg(4, vector<vector<int> >(4, vector<int>(8, 0)));
+vector<vector<int> > dead(4, vector<int>(4, 0));
+int moveY[8]={-1,-1,0,1,1,1,0,-1}, moveX[8]={0,-1,-1,-1,0,1,1,1};
+int cnt = 0, trial=0, pacmanY=0, pacmanX=0;
+
+void print_monster(){
+    for(int d=0; d<8; d++){
+        cout<<"d: "<<d<<"\n";
+        for(int y=0; y<4; y++){
+            for(int x=0; x<4; x++){
+                cout<<monster[y][x][d]<<" ";
+            }
+            cout<<"\n";
+        }
+        cout<<"\n";
     }
-    
+}
+void print_cnt(){
+    for(int i=0; i<4; i++){
+        for(int j=0; j<4; j++){
+            cout<<accumulate(monster[i][j].begin(), monster[i][j].end(), 0)<<" ";
+        }
+        cout<<"\n";
+    }
+    cout<<"\n";
+}
+bool check_bound(int y, int x){
+    return y >= 0 && y < 4 && x >=0 && x < 4;
+}
+void copy_monster(){
+    vector<vector<vector<int> > > temp(4, vector<vector<int> >(4, vector<int>(8, 0)));
+    temp = monster;
+    egg = temp;
 }
 void move_monster(int t){
-    int limit = monster.size();
-    for(int i=0; i<limit; i++){
-        Point now = monster.front(); monster.pop();
-        int start_dir = now.dir - 1;
-        for(int d=0; d<8; d++){
-            Point next;
-            next.dir = start_dir + d;
-            if (next.dir > 7) next.dir-=8;
-            next.y = now.y + moveY[next.dir];
-            next.x = now.x + moveX[next.dir];
-            if (check_bound(next.y, next.x) && map[next.y][next.x][t] == 0 && !(next.y == packmanY && next.x == packmanX)){
-                next.dir += 1;
-                monster.push(next);
-                monster_cnt[next.y][next.x][t+1]++;
-                break;
-            }
-        }
-    }
-}
-void move_packman(int tr){
-    int first_d = 0, second_d = 0, third_d = 0, eat = 0;
-    // 우선순위부터 상상상, 상상좌 ... 먼저 나온 놈이 우선순위 높음
-    for(int f = 0; f<8; f+=2){
-        int first_y = packmanY + moveY[f];
-        int first_x = packmanX + moveX[f];
-        if (!check_bound(first_y, first_x)) continue;
-        for(int s = 0; s<8; s+= 2){
-            int second_y = first_y + moveY[s];
-            int second_x = first_x + moveX[s];
-            if (!check_bound(second_y, second_x) || (first_y == second_y && first_x == second_x)) continue;
-            for(int t=0; t<8; t+=2){
-                int third_y = second_y + moveY[t];
-                int third_x = second_x + moveX[t];
-                if (!check_bound(third_y, third_x) || ((first_y == third_y && first_x == third_x) || (second_y == third_y && second_x == third_x))) continue;
-                int temp_eat = monster_cnt[first_y][first_x][tr+1] + monster_cnt[second_y][second_x][tr+1] + monster_cnt[third_y][third_x][tr+1];
-                if (temp_eat > eat){
-                    eat = temp_eat;
-                    first_d = f;
-                    second_d = s;
-                    third_d = t;
+    vector<vector<vector<int> > > temp(4, vector<vector<int> >(4, vector<int>(8, 0)));
+    for(int y=0; y<4; y++){
+        for(int x=0; x<4; x++){
+            for(int d=0; d<8; d++){
+                if (!monster[y][x][d]) continue;
+                bool flag = false;
+                for(int c=0; c<8; c++){
+                    int nd = d + c;
+                    if (nd > 7) nd -= 8;
+                    int ny = y + moveY[nd];
+                    int nx = x + moveX[nd];
+                    if (check_bound(ny, nx) && dead[ny][nx] < t+1 && !(ny == pacmanY && nx == pacmanX)){
+                        // if (t == 4){
+                        //     cout<<"y: "<<ny<<" x: "<<nx<<" d: "<<nd<<"\n";
+                        // }
+                        flag = true;
+                        temp[ny][nx][nd] += monster[y][x][d];
+                        monster[y][x][d] = 0;
+                        break;
+                    }
+                }
+                if (!flag) {
+                    temp[y][x][d] += monster[y][x][d];
+                    monster[y][x][d] = 0;
                 }
             }
         }
     }
-    int fy = packmanY + moveY[first_d];
-    int fx = packmanX + moveX[first_d];
-    cout<<"first: "<<fy<<" "<<fx<<"\n";
-    if (monster_cnt[fy][fx][tr+1] != 0){
-        monster_cnt[fy][fx][tr+1] = 0;
-        for(int i=1; i<=2; i++){
-            map[fy][fx][tr+1+i] = 1;
-        }
-    }
-    int sy = fy + moveY[second_d];
-    int sx = fx + moveX[second_d];
-    cout<<"second: "<<sy<<" "<<sx<<"\n";
-    if (monster_cnt[sy][sx][tr+1] != 0){
-        monster_cnt[sy][sx][tr+1] = 0;
-        for(int i=1; i<=2; i++){
-            map[sy][sx][tr+1+i] = 1;
-        }
-    }
-    int ty = sy + moveY[third_d];
-    int tx = sx + moveX[third_d];
-    cout<<"thrid: "<<ty<<" "<<tx<<"\n";
-    if (monster_cnt[ty][tx][tr+1] != 0){
-        monster_cnt[ty][tx][tr+1] = 0;
-        for(int i=1; i<=2; i++){
-            map[ty][tx][tr+1+i] = 1;
-        }
-    }
-    int limit = monster.size();
-    for(int i=0; i<limit; i++){
-        Point temp = monster.front(); monster.pop();
-        if (temp.y == fy && temp.x == fx) continue;
-        if (temp.y == sy && temp.x == sx) continue;
-        if (temp.y == ty && temp.x == tx) continue;
-        monster.push(temp);
-    }
-    packmanY = ty;
-    packmanX = tx;
+    monster = temp;
 }
-void add_monster(int t){
-    while(!egg.empty()){
-        Point mon = egg.front(); egg.pop();
-        monster.push(mon);
-        monster_cnt[mon.y][mon.x][t+1]++;
+void move_pacman(int t){
+    int firstY=0, firstX=0, secondY=0, secondX=0, thirdY=0, thirdX=0, fcnt=0, scnt=0, tcnt=0, eat=-1;
+    // cout<<"start: "<<pacmanY<<" "<<pacmanX<<"\n";
+    for(int f=0; f<8; f+=2){
+        int fy = pacmanY + moveY[f];
+        int fx = pacmanX + moveX[f];
+        if (!check_bound(fy, fx)) continue;
+        for(int s=0; s<8; s+=2){
+            int sy = fy + moveY[s];
+            int sx = fx + moveX[s];
+            if (!check_bound(sy, sx)) continue;
+            for(int t=0; t<8; t+=2){
+                int ty = sy + moveY[t];
+                int tx = sx + moveX[t];
+                if (!check_bound(ty, tx)) continue;
+                vector<vector<vector<int> > > temp(4, vector<vector<int> >(4, vector<int>(8, 0)));
+                temp = monster;
+                int temp_fcnt = accumulate(temp[fy][fx].begin(), temp[fy][fx].end(), 0);
+                fill(temp[fy][fx].begin(), temp[fy][fx].end(), 0);
+
+                int temp_scnt = accumulate(temp[sy][sx].begin(), temp[sy][sx].end(), 0);
+                fill(temp[sy][sx].begin(), temp[sy][sx].end(), 0);
+
+                int temp_tcnt = accumulate(temp[ty][tx].begin(), temp[ty][tx].end(), 0);
+                int temp_eat =  temp_fcnt + temp_scnt + temp_tcnt; 
+                if (temp_eat > eat){
+                    eat = temp_eat;
+                    firstY = fy; firstX = fx; fcnt = temp_fcnt;
+                    secondY = sy; secondX = sx; scnt = temp_scnt;
+                    thirdY = ty; thirdX = tx; tcnt = temp_tcnt;
+                }
+            }
+        }
+    }
+    if (fcnt != 0) {
+        dead[firstY][firstX] = t+3;
+        fill(monster[firstY][firstX].begin(), monster[firstY][firstX].end(), 0);
+    }
+    if (scnt != 0) {
+        dead[secondY][secondX] = t+3;
+        fill(monster[secondY][secondX].begin(), monster[secondY][secondX].end(), 0);
+    }
+    if (tcnt != 0) {
+        dead[thirdY][thirdX] = t+3;
+        fill(monster[thirdY][thirdX].begin(), monster[thirdY][thirdX].end(), 0);
+    }
+    pacmanY = thirdY;
+    pacmanX = thirdX;
+    
+    // cout<<"eat: "<<eat<<"\n";
+    // cout<<"first: "<<firstY<<" "<<firstX<<"\n";
+    // cout<<"second: "<<secondY<<" "<<secondX<<"\n";
+    // cout<<"third: "<<thirdY<<" "<<thirdX<<"\n";
+    // cout<<"after eat\n";
+    // print_cnt();
+}
+void birth_monster(){
+    for(int d=0; d<8; d++){
+        for(int y=0; y<4; y++){
+            for(int x=0; x<4; x++){
+                monster[y][x][d] += egg[y][x][d];
+                egg[y][x][d] = 0;
+            }
+        }
     }
 }
-int main() {
-    cin>>cnt>>trial>>packmanY>>packmanX;
-    //map[packmanY][packmanX][0] = 1;
+void print_dead(){
+    cout<<"dead: \n";
+    for(int i=0; i<4; i++){
+        for(int j=0; j<4; j++){
+            cout<<dead[i][j]<<" ";
+        }
+        cout<<"\n";
+    }
+    cout<<"\n";
+}
+int main(){
+    cin>>cnt>>trial;
+    cin>>pacmanY>>pacmanX;
+    pacmanY-=1;
+    pacmanX-=1;
     for(int i=0; i<cnt; i++){
-        Point temp;
-        cin>>temp.y>>temp.x>>temp.dir;
-        monster_cnt[temp.y][temp.x][0]++;
-        monster.push(temp);
+        int tempY=0, tempX=0, tempD=0;
+        cin>>tempY>>tempX>>tempD;
+        monster[tempY-1][tempX-1][tempD-1]++;
     }
     for(int i=0; i<trial; i++){
-        cout<<"trial: "<<i+1<<"\n";
-        cout<<"monster size: "<<monster.size()<<"\n";
-        copy_monster(i);
+        // cout<<"trial: "<<i<<"\n";
+        copy_monster();
+        // cout<<"before move\n";
+        // print_cnt();
+        // print_dead();
         move_monster(i);
-        cout<<"move_monster\n";
-        cout<<"monster size: "<<monster.size()<<"\n";
-        for(int a=1; a<=4; a++){
-            for(int b=1; b<=4; b++){
-                cout<<monster_cnt[a][b][i+1];
-            }
-            cout<<"\n";
-        }
-        cout<<"\n";
-        cout<<"packman position: "<<packmanY<<" "<<packmanX<<"\n";
-        move_packman(i);
-        cout<<"move_packman\n";
-        for(int a=1; a<=4; a++){
-            for(int b=1; b<=4; b++){
-                cout<<monster_cnt[a][b][i+1];
-            }
-            cout<<"\n";
-        }
-        cout<<"\n";
-        add_monster(i);
-        cout<<"add_monster\n";
-        for(int a=1; a<=4; a++){
-            for(int b=1; b<=4; b++){
-                cout<<monster_cnt[a][b][i+1];
-            }
-            cout<<"\n";
-        }
-        cout<<"\n";
+        // cout<<"after move\n";
+        // print_cnt();
+        move_pacman(i);
+        birth_monster();
+        // print_cnt();
     }
-    for(int i=1; i<=4; i++){
-        for(int j=1; j<=4; j++){
-            ans+=monster_cnt[i][j][trial];
+    int ans = 0;
+    for(int y=0; y<4; y++){
+        for(int x=0; x<4; x++){
+            ans += accumulate(monster[y][x].begin(), monster[y][x].end(), 0);
         }
     }
-    cout<<ans<<"\n";
-    // for(int z=0; z<=trial; z++){
-    //     cout<<"trial: "<<z<<"\n";
-    //     for(int y=1; y<=4; y++){
-    //         for(int x=1; x<=4; x++){
-    //             cout<<monster_cnt[y][x][z]<<" ";
-    //         }
-    //         cout<<"\n";
-    //     }
-    //     cout<<"\n\n";
-    // }
-    
+    cout<<ans;
 }
