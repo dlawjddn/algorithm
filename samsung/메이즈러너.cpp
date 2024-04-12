@@ -1,250 +1,210 @@
 #include <iostream>
-#include <vector>
-#include <algorithm>
-#include <cmath>
 
 using namespace std;
 
-struct Person{
-    int y, x;
-    bool die;
-};
-Person people[30];
-int size=0, people_cnt=0, trial=0, exitY=0, exitX=0, ans=0;
-int dist[10][10], moveY[4]={0,1,0,-1}, moveX[4]={1,0,-1,0};
-vector<vector<int> > maze(10, vector<int>(10, 0));
-void print_people(){
-    vector<vector<int> > temp_people(10, vector<int>(10, 0));
-    for(int i=0; i<people_cnt; i++){
-        if (people[i].die) continue;
-        temp_people[people[i].y][people[i].x] = i + 1;
-    }
-    cout<<"people\n";
-    for(int y=0; y<size; y++){
-        for(int x=0; x<size; x++){
-            cout<<temp_people[y][x]<<" ";
-        }
-        cout<<"\n";
-    }
-}
-void print_maze(){
-    cout<<"maze\n";
-    for(int y=0; y<size; y++){
-        for(int x=0; x<size; x++){
-            cout<<maze[y][x]<<" ";
-        }
-        cout<<"\n";
-    }
-}
-bool check_bound(int y, int x){
-    return y>=0 && y<size && x>=0 && x<size;
-}
+#define MAX_N 10
 
-bool close_distance(int y, int x, int ny, int nx){
-    int now_distance = abs(exitY - y) + abs(exitX - x);
-    int next_distance = abs(exitY - ny) + abs(exitX - nx);
-    // cout<<"now: "<<now_distance<<" next: "<<next_distance<<"\n";
-    return (now_distance > next_distance);
-}
+int n, m, k;
 
-void move_person(){
-    // cout<<"before move\n";
-    // print_maze();
-    // print_people();
-    // cout<<"\n\n";
-    for(int i=0; i<people_cnt; i++){
-        if (people[i].die) {
-            //cout<<i+1<<" is die";
+// 모든 벽들의 상태를 기록해줍니다.
+int board[MAX_N + 1][MAX_N + 1];
+
+// 회전의 구현을 편하게 하기 위해 2차원 배열을 하나 더 정의해줍니다.
+int next_board[MAX_N + 1][MAX_N + 1];
+
+// 참가자의 위치 정보를 기록해줍니다.
+pair<int, int> traveler[MAX_N + 1];
+
+// 출구의 위치 정보를 기록해줍니다.
+pair<int, int> exits;
+
+// 정답(모든 참가자들의 이동 거리 합)을 기록해줍니다.
+int ans;
+
+// 회전해야 하는 최소 정사각형을 찾아 기록해줍니다.
+int sx, sy, square_size;
+
+// 모든 참가자를 이동시킵니다.
+void MoveAllTraveler() {
+    // m명의 모든 참가자들에 대해 이동을 진행합니다.
+    for(int i = 1; i <= m; i++) {
+        // 이미 출구에 있는 경우 스킵합니다.
+        if(traveler[i].first == exits.first && traveler[i].second == exits.second)
             continue;
-        }
-        vector<int> close_dir;
-        int y = people[i].y;
-        int x = people[i].x;
-        for(int d=0; d<4; d++){
-            int ny = y + moveY[d];
-            int nx = x + moveX[d];
-            if (check_bound(ny, nx) && maze[ny][nx]<=0 && close_distance(y, x, ny, nx)){
-                close_dir.push_back(d);
+        
+        // 행이 다른 경우 행을 이동시켜봅니다.
+        if(traveler[i].first != exits.first) {
+            int nx = traveler[i].first;
+            int ny = traveler[i].second;
+
+            if(exits.first > nx) nx++;
+            else nx--;
+
+            // 벽이 없다면 행을 이동시킬 수 있습니다.
+            // 이 경우 행을 이동시키고 바로 다음 참가자로 넘어갑니다.
+            if(!board[nx][ny]) {
+                traveler[i].first = nx;
+                traveler[i].second = ny;
+                ans++;
+                continue;
             }
         }
-        //cout<<i+1<<" size: "<<close_dir.size()<<"\n";
-        if (close_dir.size() > 1){
-            for(int j=0; j<close_dir.size(); j++){
-                //cout<<"direction: "<<close_dir[j]<<"\n";
-                if (close_dir[j] == 1 || close_dir[j] == 3){
-                    int ny = y + moveY[close_dir[j]];
-                    int nx = x + moveX[close_dir[j]];
-                    ans++;
-                    if (maze[ny][nx] == -1){
-                        //cout<<"????\n";
-                        people[i].die = true;
-                        break;
-                    }
-                    people[i].y = ny;
-                    people[i].x = nx;
-                    break;
-                }
+
+        // 열이 다른 경우 열을 이동시켜봅니다.
+        if(traveler[i].second != exits.second) {
+            int nx = traveler[i].first;
+            int ny = traveler[i].second;
+
+            if(exits.second > ny) ny++;
+            else ny--;
+
+            // 벽이 없다면 행을 이동시킬 수 있습니다.
+            // 이 경우 열을 이동시킵니다.
+            if(!board[nx][ny]) {
+                traveler[i].first = nx;
+                traveler[i].second = ny;
+                ans++;
+                continue;
             }
-        } else if (close_dir.size() == 1){
-            // cout<<"direction: "<<close_dir[0]<<"\n";
-            int ny = y + moveY[close_dir[0]];
-            int nx = x + moveX[close_dir[0]];
-            ans++;
-            if (maze[ny][nx] == -1){
-                people[i].die = true;
-            }
-            people[i].y = ny;
-            people[i].x = nx;
         }
     }
-    
 }
-void rotate_rigth90(){
-    //cout<<"exit: "<<exitY<<" "<<exitX<<"\n";
-    int startY = 0, startX=0, length = 0;
-    bool stop = false;
-    vector<vector<int> > temp_people(10, vector<int>(10, 0));
-    for(int i=0; i<people_cnt; i++){
-        if (people[i].die) continue;
-        temp_people[people[i].y][people[i].x] = i + 1;
-    }
-    // 조건에 맞는 정사각형 찾기
-    for(int len=1; len<=size; len++){
-        if (stop) break;
-        for(int sy=0; sy<size; sy++){
-            if (stop) break;
-            for(int sx=0; sx<size; sx++){
-                if (stop) break;
-                if (sx + len > size) continue;
-                if (sy + len > size) continue;
-                bool exit_flag=false, person_flag=false;
-                for(int y=sy; y<sy+len; y++){
-                    if (stop) break;
-                    for(int x=sx; x<sx+len; x++){
-                        if (!check_bound(y,x)) break;
-                        if (maze[y][x] == -1) exit_flag = true;
-                        if (temp_people[y][x] > 0) person_flag = true;
-                        if (exit_flag && person_flag){
-                            startY = sy;
-                            startX = sx;
-                            length = len;
-                            stop = true;
-                            break;
+
+// 한 명 이상의 참가자와 출구를 포함한 가장 작은 정사각형을 찾습니다.
+void FindMinimumSquare() {
+    // 가장 작은 정사각형부터 모든 정사각형을 만들어봅니다.
+    for(int sz = 2; sz <= n; sz++) {
+        // 가장 좌상단 r 좌표가 작은 것부터 하나씩 만들어봅니다.
+        for(int x1 = 1; x1 <= n - sz + 1; x1++) {
+            // 가장 좌상단 c 좌표가 작은 것부터 하나씩 만들어봅니다.
+            for(int y1 = 1; y1 <= n - sz + 1; y1++) {
+                int x2 = x1 + sz - 1;
+                int y2 = y1 + sz - 1;
+
+                // 만약 출구가 해당 정사각형 안에 없다면 스킵합니다.
+                if(!(x1 <= exits.first && exits.first <= x2 && y1 <= exits.second && exits.second <= y2)) {
+                    continue;
+                }
+
+                // 한 명 이상의 참가자가 해당 정사각형 안에 있는지 판단합니다.
+                bool is_traveler_in = false;
+                for(int l = 1; l <= m; l++) {
+                    if(x1 <= traveler[l].first && traveler[l].first <= x2 && y1 <= traveler[l].second && traveler[l].second <= y2) {
+                        // 출구에 있는 참가자는 제외합니다.
+                        if(!(traveler[l].first == exits.first && traveler[l].second == exits.second)) {
+                            is_traveler_in = true;
                         }
                     }
                 }
-            }
-        }
-    }
-    //cout<<"rotate: "<<startY<<" "<<startX<<" "<<length<<"\n";
-    // 오른쪽으로 90도 회전하기 + exit좌표 업데이트 필수 + 벽의 경우 -1 + 탈출구는 숫자 유지
-    // maze랑 temp_people 모두 회전한 뒤, people 업데이트
-    int next_people[10][10];
-    memset(next_people, 0, sizeof(next_people));
-    int next_maze[10][10];
-    memset(next_maze, 0, sizeof(next_maze));
-    for(int y=startY; y<startY+length; y++){
-        for(int x=startX; x<startX+length; x++){
-            //cout<<"to: "<<y<<" "<<x<<" from: "<<x+startY<<startY+length - 1 - y + startX<<"\n";
-            next_people[x+startY-startX][startY+length - 1 - y + startX] = temp_people[y][x];
-            //next_maze[x+startY][startY+length - 1 - y + startX] = maze[y][x];
-            //if (next_maze[x][startY+length - 1 - y + startX] == 0) next_maze[x][startY+length - 1 - y + startX] = 0;
-            if (maze[y][x] == 0) {
-                next_maze[x+startY-startX][startY+length-1 -y + startX] = 0;
-            }
-            else if (maze[y][x] == -1) {
-                next_maze[x+startY-startX][startY+length-1 -y + startX] = -1;
-                // exitY = x;
-                // exitX = startX+length-1 -y;
-            }
-            else {
-                next_maze[x+startY-startX][startY+length-1 -y + startX] = maze[y][x] - 1;
-            }
 
-            // for(int y = startY; y < startY + length; y++) {
-            //     for(int x = startX; x < startX + length; x++) {
-            //         int rotatedY = x - startX + startY;
-            //         int rotatedX = startY + length - 1 - (y - startY + startX);
-                    
-            //         next_people[rotatedY][rotatedX] = temp_people[y][x];
+                // 만약 한 명 이상의 참가자가 해당 정사각형 안에 있다면
+                // sx, sy, sqaure_size 정보를 갱신하고 종료합니다.
+                if(is_traveler_in) {
+                    sx = x1;
+                    sy = y1;
+                    square_size = sz;
 
-            //         if (maze[y][x] == 0) {
-            //             next_maze[rotatedY][rotatedX] = 0;
-            //         } else if (maze[y][x] == -1) {
-            //             next_maze[rotatedY][rotatedX] = -1;
-            //             // exitY = rotatedY;
-            //             // exitX = rotatedX;
-            //         } else {
-            //             next_maze[rotatedY][rotatedX] = maze[y][x] - 1;
-            //         }
-            //     }
-            // }
-        }
-    }
-    // cout<<"next maze\n";
-    // for(int y=0; y<size; y++){
-    //     for(int x=0; x<size; x++){
-    //         cout<<next_maze[y][x]<<" ";
-    //     }
-    //     cout<<"\n";
-    // }
-    for(int y=startY; y<startY+length; y++){
-        for(int x=startX; x<startX+length; x++){
-            maze[y][x] = next_maze[y][x];
-            if (maze[y][x] == -1){
-                exitY = y;
-                exitX = x;
-            }
-        }
-    }
-    for(int i=0; i<size; i++){
-        for(int j=0; j<size; j++){
-            if (next_people[i][j] > 0){
-                people[next_people[i][j] - 1].y = i;
-                people[next_people[i][j] - 1].x = j;
+                    return;
+                }
             }
         }
     }
 }
-int main() {
-    cin>>size>>people_cnt>>trial;
-    for(int i=0; i<size; i++){
-        for(int j=0; j<size; j++){
-            cin>>maze[i][j];
+
+// 정사각형 내부의 벽을 회전시킵니다.
+void RotateSquare() {
+    // 우선 정사각형 안에 있는 벽들을 1 감소시킵니다.
+    for(int x = sx; x < sx + square_size; x++)
+        for(int y = sy; y < sy + square_size; y++) {
+            if(board[x][y]) board[x][y]--;
+        }
+
+    // 정사각형을 시계방향으로 90' 회전합니다.
+    for(int x = sx; x < sx + square_size; x++)
+        for(int y = sy; y < sy + square_size; y++) {
+            // Step 1. (sx, sy)를 (0, 0)으로 옮겨주는 변환을 진행합니다. 
+            int ox = x - sx, oy = y - sy;
+            // Step 2. 변환된 상태에서는 회전 이후의 좌표가 (x, y) -> (y, square_n - x - 1)가 됩니다.
+            int rx = oy, ry = square_size - ox - 1;
+            // Step 3. 다시 (sx, sy)를 더해줍니다.
+            next_board[rx + sx][ry + sy] = board[x][y];
+        }
+
+    // next_board 값을 현재 board에 옮겨줍니다.
+    for(int x = sx; x < sx + square_size; x++)
+        for(int y = sy; y < sy + square_size; y++) {
+            board[x][y] = next_board[x][y];
+        }
+}
+
+// 모든 참가자들 및 출구를 회전시킵니다.
+void RotateTravelerAndExit() {
+    // m명의 참가자들을 모두 확인합니다.
+    for(int i = 1; i <= m; i++) {
+        int x = traveler[i].first;
+        int y = traveler[i].second;
+        // 해당 참가자가 정사각형 안에 포함되어 있을 때에만 회전시킵니다.
+        if(sx <= x && x < sx + square_size && sy <= y && y < sy + square_size) {
+            // Step 1. (sx, sy)를 (0, 0)으로 옮겨주는 변환을 진행합니다. 
+            int ox = x - sx, oy = y - sy;
+            // Step 2. 변환된 상태에서는 회전 이후의 좌표가 (x, y) -> (y, square_n - x - 1)가 됩니다.
+            int rx = oy, ry = square_size - ox - 1;
+            // Step 3. 다시 (sx, sy)를 더해줍니다.
+            traveler[i] = make_pair(rx + sx, ry + sy);
         }
     }
-    for(int i=0; i<people_cnt; i++){
-        int y=0, x=0;
-        cin>>y>>x;
-        people[i].y = y-1;
-        people[i].x = x-1;
-        people[i].die = false;
+
+    // 출구에도 회전을 진행합니다.
+    int x = exits.first;
+    int y = exits.second;
+    if(sx <= x && x < sx + square_size && sy <= y && y < sy + square_size) {
+        // Step 1. (sx, sy)를 (0, 0)으로 옮겨주는 변환을 진행합니다. 
+        int ox = x - sx, oy = y - sy;
+        // Step 2. 변환된 상태에서는 회전 이후의 좌표가 (x, y) -> (y, square_n - x - 1)가 됩니다.
+        int rx = oy, ry = square_size - ox - 1;
+        // Step 3. 다시 (sx, sy)를 더해줍니다.
+        exits = make_pair(rx + sx, ry + sy);
     }
-    cin>>exitY>>exitX;
-    exitX-=1;
-    exitY-=1;
-    maze[exitY][exitX] = -1;
+}
+
+int main() {
+    cin >> n >> m >> k;
+    for(int i = 1; i <= n; i++)
+        for(int j = 1; j <= n; j++)
+            cin >> board[i][j];
     
-    for(int i=0; i<trial; i++){
-        cout<<"\n\nturn: "<<i+1<<"\n";
-        move_person();
-        rotate_rigth90();
-        // cout<<"after move: "<<i+1<<"\n";
-        // cout<<"exit: "<<exitY<<" "<<exitX<<"\n";
-        // print_people();
-        // rotate_rigth90();
-        // cout<<"after turn: "<<i+1<<"\n";
-        // cout<<"exit: "<<exitY<<" "<<exitX<<"\n";
-        // cout<<"over!!\n";
-        // print_maze();
-        // print_people();
-        // for(int a=0; a<people_cnt; a++){
-        //     cout<<a+1<<" person is die?"<<people[a].die<<"\n";
-        // }   
+    for(int i = 1; i <= m; i++) {
+        cin >> traveler[i].first;
+        cin >> traveler[i].second;
     }
-    cout<<ans<<"\n";
-    cout<<exitY+1<<" "<<exitX+1;
-    
-    
-    return 0;
+
+    cin >> exits.first;
+    cin >> exits.second;
+
+    while(k--) {
+        // 모든 참가자를 이동시킵니다.
+        MoveAllTraveler();
+
+        // 모든 사람이 출구로 탈출했는지 판단합니다.
+        bool is_all_escaped = true;
+        for(int i = 1; i <= m; i++) {
+            if(!(traveler[i].first == exits.first && traveler[i].second == exits.second)) {
+                is_all_escaped = false;
+            }
+        }
+
+        // 만약 모든 사람이 출구로 탈출했으면 바로 종료합니다.
+        if(is_all_escaped) break;
+
+        // 한 명 이상의 참가자와 출구를 포함한 가장 작은 정사각형을 찾습니다.
+        FindMinimumSquare();
+
+        // 정사각형 내부의 벽을 회전시킵니다.
+        RotateSquare();
+        // 모든 참가자들 및 출구를 회전시킵니다.
+        RotateTravelerAndExit();
+    }
+
+    cout << ans << "\n";
+    cout << exits.first << " " << exits.second;
 }
