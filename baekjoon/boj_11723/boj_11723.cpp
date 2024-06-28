@@ -4,6 +4,7 @@
 using namespace std;
 
 int main(){
+    ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
     int trial; cin>>trial;
     vector<bool> exists(21, false);
     vector<bool> all(21, true);
