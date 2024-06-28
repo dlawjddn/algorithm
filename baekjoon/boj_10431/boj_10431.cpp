@@ -33,8 +33,8 @@ int main() {
                         students[a] = students[a - 1];
                     }
                     students[k] = num;
-                    answer += (j - k);  // answer를 업데이트합니다
-                    print_students(students);  // 디버깅 출력을 위해
+                    answer += (j - k);  
+                    //print_students(students);
                 }
             }
         }
