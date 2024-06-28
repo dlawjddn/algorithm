@@ -53,7 +53,7 @@ int main(){
             if (parents[start] != parents[roads[start][j]]) make_relation(start, roads[start][j]);
         }
     }
-
+    // 연관된 node인지 파악
     for (int i = 1; i < plan.size(); i++) {
         if (!is_same_parent(plan[i-1], plan[i])) {
             cout << "NO";
