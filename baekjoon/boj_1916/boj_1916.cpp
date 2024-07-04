@@ -1,3 +1,12 @@
+/**
+ * @file boj_1916.cpp
+ * @brief 백준 gold5 최소비용 구하기
+ * @version 0.1
+ * @date 2024-07-05
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include <iostream>
 #include <vector>
 #include <algorithm>
