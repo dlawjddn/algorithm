@@ -1,104 +1,87 @@
+/**
+ * @file boj_17142.cpp
+ * @brief 백준 gold3 연구소 3
+ * @version 0.1
+ * @date 2024-07-09
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 데이터 추가로 오답이 된 문제인데.. 원트컷~!! 성장했구나!
+ * 
+ */
 #include <iostream>
-#include <cmath>
-#include <cstring>
+#include <vector>
+#include <algorithm>
 #include <queue>
-using namespace std;
-struct Point
-{
-    int x, y;
-};
-Point virus[10];
-int map[50][50], temp_map[50][50], visited[50][50], arr[10], move_x[4]={1,0,-1,0}, move_y[4]={0,1,0,-1}, size_sq=0, max_virus=0, virus_cnt=0, emp_cnt=0, ans=987654321;
-void spread_virus()
-{
-    Point temp, next;
-    int total_time=0, temp_cnt=0, temp_max=1;
-    queue<Point> q;
-    for(int a=0; a<max_virus; a++)
-    {
-        q.push(virus[arr[a]]);
-        visited[virus[arr[a]].y][virus[arr[a]].x]=1;
-    }
-    while(!q.empty())
-    {
-        temp=q.front(); q.pop();
-        total_time=visited[temp.y][temp.x];
-        for(int d=0; d<4; d++)
-        {
-            next.y=temp.y+move_y[d];
-            next.x=temp.x+move_x[d];
-            if (next.y>=0 && next.y<size_sq && next.x>=0 && next.x<size_sq && visited[next.y][next.x]==0 && map[next.y][next.x]!=1)
-            {
-                visited[next.y][next.x]=visited[temp.y][temp.x]+1;
-                temp_cnt++;
-                q.push(next);
-            }
-        }
-    }
-    if (temp_cnt==emp_cnt)
-    {
-        for(int a=0; a<size_sq; a++)
-        {
-            for(int b=0; b<size_sq; b++)
-            {
-                if (map[a][b]!=2)
-                temp_max=max(temp_max, visited[a][b]);
-            }
-        }
-        ans=min(ans, temp_max);
-    }
 
+using namespace std;
+
+int sq_size, choose, empty_cnt = 0, answer = 987654321, moveY[4]={0,1,0,-1}, moveX[4]={1,0,-1,0};
+vector<vector<int> > maps;
+vector<pair<int, int> > viruses;
+vector<bool> choose_visited;
+
+bool check_outside(int y, int x) {
+    return y < 0 || y >= sq_size || x < 0 || x >= sq_size;
 }
-void find_out(int idx, int num)
-{
-    if(idx==max_virus-1)
-    {
-        spread_virus();
-        memset(visited, 0, sizeof(visited));
-        return ;
+
+void spread_virus(vector<int> activate) {
+    queue<pair<int, int> > q;
+    vector<vector<int> > visited(sq_size, vector<int>(sq_size, 0));
+    for(auto idx :activate) {
+        q.push(viruses[idx]);
+        visited[viruses[idx].first][viruses[idx].second] = 1;
     }
-    else
-    {
-        idx++;
-        for(int b=num+1; b<virus_cnt; b++)
-        {
-            arr[idx]=b;
-            find_out(idx, b);
+    int cnt = 0, cost = 0;
+    while(!q.empty()) {
+        auto[y, x] = q.front(); q.pop();
+        if (maps[y][x] == 0) {
+            cnt++;
+            cost = max(cost, visited[y][x] - 1);
+        }
+        for(int d=0; d<4; d++) {
+            int ny = y + moveY[d];
+            int nx = x + moveX[d];
+            if (check_outside(ny, nx) || visited[ny][nx] != 0 || maps[ny][nx] == 1) continue;
+            q.push(make_pair(ny, nx));
+            visited[ny][nx] = visited[y][x] + 1;
         }
     }
-}
-void combination()
-{
-    int idx=0;
-    for(int i=0; i<virus_cnt; i++)
-    {
-        arr[idx]=i;
-        find_out(idx, i);
+    if (cnt == empty_cnt) {
+        answer = min(answer, cost);
     }
-    if (ans==987654321)
-    cout<<"-1";
-    else
-    cout<<ans-1;
 }
-int main()
-{
-    int temp_empty=0;
-    cin>>size_sq>>max_virus;
-    for(int i=0; i<size_sq; i++)
-    {
-        for(int j=0; j<size_sq; j++)
-        {
-            cin>>map[i][j];
-            if (map[i][j]==2)
-            {
-                virus[virus_cnt].y=i; virus[virus_cnt].x=j;
-                virus_cnt++;
-                temp_empty++;
-            }
-            else if (map[i][j]==0)
-            temp_empty++;
+
+vector<int> add_vector(vector<int> chosen, int idx) {
+    chosen.push_back(idx);
+    return chosen;
+}
+
+void choose_virus(int idx, int cnt, vector<int> chosen) {
+    if (cnt == choose) {
+        //for(auto c : chosen) cout<<c<<" ";
+        //cout<<"\n";
+        spread_virus(chosen);
+    }
+    for(int i=idx; i<viruses.size(); i++) {
+        if (choose_visited[i]) continue;
+        choose_visited[i] = true;
+        choose_virus(i, cnt + 1, add_vector(chosen, i));
+        choose_visited[i] = false;
+    }
+}
+
+int main(){
+    cin>>sq_size>>choose;
+    maps.resize(sq_size, vector<int>(sq_size, 0));
+    for(int y=0; y<sq_size; y++) {
+        for(int x=0; x<sq_size; x++) {
+            cin>>maps[y][x];
+            if (maps[y][x] == 2) viruses.push_back(make_pair(y, x));
+            else if (maps[y][x] == 0) empty_cnt++;
         }
     }
-    emp_cnt=temp_empty-max_virus;
-    combination();
+    choose_visited.resize(viruses.size(), false);
+    choose_virus(0, 0, vector<int>());
+    (answer == 987654321) ? cout<<-1 : cout<<answer;
 }
