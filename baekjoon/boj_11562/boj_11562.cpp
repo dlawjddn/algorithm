@@ -1,3 +1,12 @@
+/**
+ * @file 시간초과_boj_11562.cpp
+ * @brief 백준 gold3 백양로 브레이크
+ * @version 0.1
+ * @date 2024-07-12
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -10,6 +19,7 @@ int node_cnt, edge_cnt, question_cnt;
 vector<vector<int> > costs;
 
 int main(){
+    ios_base::sync_with_stdio(0); cin.tie(0);
     cin>>node_cnt>>edge_cnt;
     costs.resize(node_cnt + 1, vector<int>(node_cnt + 1, INF));
     for(int i=0; i<edge_cnt; i++) {
