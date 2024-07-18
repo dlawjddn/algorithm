@@ -6,7 +6,7 @@
  * 
  * @copyright Copyright (c) 2024
  * 
- * long long의 최대값은 1e18!!!
+ * long long의 최대값은 1e18!!
  * 
  */
 #include <iostream>
