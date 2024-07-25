@@ -1,6 +1,6 @@
 /**
  * @file boj_1162.cpp
- * @brief 백준 platium5 도로포장
+ * @brief 백준 platinum5 도로포장
  * @version 0.1
  * @date 2024-07-24
  * 
