@@ -1,3 +1,12 @@
+/**
+ * @file boj_9307.cpp
+ * @brief 백준 gold2 미확인 도착지
+ * @version 0.1
+ * @date 2024-07-25
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include <iostream>
 #include <vector>
 #include <algorithm>
