@@ -53,3 +53,44 @@ vector<int> solution(vector<string> operations) {
     
     return answer;
 }
+
+/**
+ * @file 이중우선순위큐_42628.cpp
+ * @brief 프로그래머스 lv3 이중 우선 순위 큐
+ * @version 0.1
+ * @date 2024-08-17
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 두번째 풀이.. 이번에는 multiset이 생각이 안 났다..
+ * 이렇게 하나씩 다시 알아가는거지..
+ */
+
+#include <string>
+#include <vector>
+#include <queue>
+#include <set>
+#include <iostream>
+
+using namespace std;
+
+multiset<int> ms;
+
+vector<int> solution(vector<string> operations) {
+    vector<int> answer;
+    for(auto oper : operations) {
+        char order = oper[0];
+        int number = stoi(oper.substr(2));
+        if (order == 'I') ms.insert(number);
+        else {
+            if (ms.empty()) continue;
+            if (number == 1) {
+                ms.erase(--ms.end());
+            } else {
+                ms.erase(ms.begin());
+            }
+        }
+    }
+    if (ms.empty()) return {0,0};
+    else return {*ms.rbegin(), *ms.begin()};
+}
