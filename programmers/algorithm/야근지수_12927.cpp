@@ -36,3 +36,40 @@ long long solution(int n, vector<int> works) {
     }
     return answer;
 }
+/**
+ * @file 야근지수_12927.cpp
+ * @brief 프로그래머스 lv.3 야근지수
+ * @version 0.1
+ * @date 2024-08-17
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 저번에 못 푼 문제를 풀었다 야호~
+ * 
+ */
+
+#include <string>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+priority_queue<int, vector<int>, less<int> > pq;
+
+long long solution(int n, vector<int> works) {
+    long long answer = 0;
+    for(int i=0; i<works.size(); i++) {
+        pq.push(works[i]);
+    }
+    for(int i=0; i<n; i++) {
+        if (pq.empty()) break;
+        int rest_work = pq.top(); pq.pop();
+        if (rest_work == 0) continue;
+        pq.push(rest_work - 1);
+    }
+    while(!pq.empty()) {
+        long long work = (long long)pq.top(); pq.pop();
+        answer += (work * work);
+    }
+    return answer;
+}
