@@ -66,3 +66,62 @@ string solution(int n, int t, int m, vector<string> timetable) {
         
     }
 }
+/**
+ * @file 1차_셔틀버스_17678.cpp
+ * @brief 프로그래머스 lv.3 2018 카카오 공채 1차 셔틀버스
+ * @version 0.1
+ * @date 2024-08-20
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 아 씨발 너무 어렵게 생각했다.. 아 짜증난다..
+ * 
+ */
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+
+priority_queue<int, vector<int>, greater<int> > pq;
+
+int convert_time(string str_time) {
+    int hour = stoi(str_time.substr(0, 2));
+    int minute = stoi(str_time.substr(3));
+    
+    return hour * 60 + minute;
+}
+
+string convert_string(int time) {
+    string result = "";
+    int hour = time / 60;
+    int minute = time % 60;
+    if (hour < 10) result += '0';
+    result += to_string(hour);
+    result += ':';
+    if (minute < 10) result += '0';
+    result += to_string(minute);
+    return result;
+}
+
+string solution(int n, int t, int m, vector<string> timetable) {
+    string answer = "";
+    for(auto time : timetable) pq.push(convert_time(time));
+    int bus_time = 540;
+    int last_people = 0;
+    for(int i=0; i<n; i++) {
+        int cnt = 0;
+        while(!pq.empty() && pq.top() <= bus_time && cnt < m) {
+            last_people = pq.top(); pq.pop();
+            cnt++;
+        }
+        if (i == n-1) {
+            if (cnt < m) answer = convert_string(bus_time);
+            else answer = answer = convert_string(last_people - 1);
+        }
+        bus_time += t;
+    }
+    return answer;
+}
