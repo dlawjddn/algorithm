@@ -48,3 +48,57 @@ vector<int> solution(int n, vector<vector<int>> roads, vector<int> sources, int 
     make_map(roads);
     return solve(n, sources, destination);
 }
+
+/**
+ * @file 부대복귀_132266.cpp
+ * @brief 프로그래머스 lv.3 부대복귀
+ * @version 0.1
+ * @date 2024-08-20
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <queue>
+
+#define INF 987654321
+
+using namespace std;
+
+vector<vector<int> > maps;
+vector<int> visited;
+
+void dijkstra(int spos) {
+    priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
+    pq.push({0, spos});
+    visited[spos] = 0;
+    while(!pq.empty()) {
+        auto[cost, pos] = pq.top(); pq.pop();
+        if (visited[pos] != cost) continue;
+        for(int x=0; x<maps[pos].size(); x++) {
+            int npos = maps[pos][x];
+            int ncost = cost + 1;
+            if (visited[npos] <= ncost) continue;
+            pq.push({ncost, npos});
+            visited[npos] = ncost;
+        }
+    }
+}
+
+vector<int> solution(int n, vector<vector<int>> roads, vector<int> sources, int destination) {
+    vector<int> answer;
+    maps.resize(n+1);
+    visited.resize(n+1, INF);
+    for(auto src : roads) {
+        maps[src[0]].push_back(src[1]);
+        maps[src[1]].push_back(src[0]);
+    }
+    dijkstra(destination);
+    for(auto src : sources) {
+        int cost = (visited[src] == INF) ? -1 : visited[src];
+        answer.push_back(cost);
+    }
+    return answer;
+}
