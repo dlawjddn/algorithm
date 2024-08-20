@@ -57,3 +57,47 @@ int solution(int n, vector<vector<int>> results) {
     }
     return answer;
 }
+/**
+ * @file 순위_49191.cpp
+ * @brief 프로그래머스 lv.3 순위
+ * @version 0.1
+ * @date 2024-08-21
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+#include <string>
+#include <vector>
+
+using namespace std;
+
+vector<vector<int> > result;
+
+int solution(int n, vector<vector<int>> results) {
+    int answer = 0;
+    result.resize(n+1, vector<int>(n+1, 0));
+    for(auto r : results) {
+        int winner = r[0];
+        int loser = r[1];
+        result[winner][loser] = 1;
+        result[loser][winner] = -1;
+    }
+    for(int i=1; i<=n; i++) {
+        for(int j=1; j<=n; j++) {
+            for(int k=1; k<=n; k++) {
+                if (result[j][i] == 0 || result[i][k] == 0) continue;
+                if (result[j][i] == result[i][k])
+                    result[j][k] = result[j][i];
+            }
+        }
+    }
+    for(int p=1; p<=n; p++) {
+        int cnt = 0;
+        for(int o=1; o<=n; o++) {
+            if (result[p][o] == 0) cnt++;
+            if (cnt > 1) break;
+        }
+        if (cnt == 1) answer++;
+    }
+    return answer;
+}
