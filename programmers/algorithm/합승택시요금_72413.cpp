@@ -59,3 +59,66 @@ int solution(int n, int s, int a, int b, vector<vector<int>> fares) {
 
     return answer;
 }
+/**
+ * @file 합승택시요금_72413.cpp
+ * @brief 프로그래머스 lv.3 2021 카카오 공채 합승 택시 요금
+ * @version 0.1
+ * @date 2024-08-22
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 흠.. 저번에 풀었던 문제인데.. 아마 정답을 보고 풀었는지 정답을 구하는게 기가 막힌다
+ * 다익스트라를 사용하는 건 알았지만 정답을 구하기가 좀 난감했는데 귀신같은 방법이 있었다..
+ * 잘 기억해둬야겠다..
+ * 
+ */
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <queue>
+
+#define INF 987654321
+
+using namespace std;
+
+vector<vector<pair<int, int> > > maps;
+
+vector<int> dijkstra(int n, int spos) {
+    priority_queue<pair<int, int>, vector<pair<int, int> >, greater<pair<int, int> > > pq;
+    vector<int> visited(n+1, INF);
+    pq.push({0, spos});
+    visited[spos] = 0;
+    while(!pq.empty()) {
+        auto[cost, pos] = pq.top(); pq.pop();
+        if (visited[pos] != cost) continue;
+        for(int x=0; x<maps[pos].size(); x++) {
+            int npos = maps[pos][x].first;
+            int ncost = cost + maps[pos][x].second;
+            if (visited[npos] <= ncost) continue;
+            pq.push({ncost, npos});
+            visited[npos] = ncost;
+        }
+    }
+    return visited;
+}
+
+int solution(int n, int s, int a, int b, vector<vector<int>> fares) {
+    int answer = INF;
+    maps.resize(n+1);
+    for(vector<int> fare : fares) {
+        int node1 = fare[0];
+        int node2 = fare[1];
+        int cost = fare[2];
+        maps[node1].push_back({node2, cost});
+        maps[node2].push_back({node1, cost});
+    }
+    vector<int> to_start = dijkstra(n, s);
+    vector<int> to_a = dijkstra(n, a);
+    vector<int> to_b = dijkstra(n, b);
+    
+    for(int t=1; t<=n; t++) {
+        if (to_start[t] == INF || to_a[t] == INF || to_b[t] == INF) continue;
+        answer = min(answer, to_start[t] + to_a[t] + to_b[t]);
+    }
+    return answer;
+}
