@@ -98,3 +98,54 @@ vector<int> solution(string s) {
     dfs(s, 0, 0);
     return {answer_depth, answer_delete};
 }
+
+/**
+ * @file 이진변환반복하기_70129.cpp
+ * @brief 프로그래머스 lv.2 이진 변환 반복하기
+ * @version 0.1
+ * @date 2024-09-25
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 레벨이 낮아졌남..
+ * 
+ */
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+
+string convert_binary(int num) {
+    string result = "";
+    while(num > 0) {
+        result += (num % 2) + '0';
+        num /= 2;
+    }
+    reverse(result.begin(), result.end());
+    return result;
+}
+
+void dfs(string str, int cnt, int zero, vector<int>& answer) {
+    if (str == "1") {
+        answer.push_back(cnt);
+        answer.push_back(zero);
+        return ;
+    }
+    // 모든 0제거 + 1의 개수 세기
+    int one_cnt = 0;
+    int zero_cnt = 0;
+    for(int i=0; i<str.size(); i++) {
+        if (str[i] == '1') one_cnt++;
+        else zero_cnt++;
+    }
+    dfs(convert_binary(one_cnt), cnt + 1, zero + zero_cnt, answer);
+    
+}
+
+vector<int> solution(string s) {
+    vector<int> answer;
+    dfs(s, 0, 0, answer);
+    return answer;
+}
