@@ -56,3 +56,56 @@ vector<int> solution(vector<string> genres, vector<int> plays) {
     }
     return answer;
 }
+/**
+ * @file 베스트앨범_42579.cpp
+ * @brief 프로그래머스 lv.2 베스트앨범
+ * @version 0.1
+ * @date 2024-09-27
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+
+unordered_map<string, int> total_play;
+unordered_map<string, vector<pair<int, int> > > infos;
+
+bool compare(pair<int, int> p1, pair<int, int> p2) {
+    if (p1.first == p2.first) {
+        return p1.second < p2.second;
+    }
+    return p1.first > p2.first;
+}
+
+vector<int> solution(vector<string> genres, vector<int> plays) {
+    vector<int> answer;
+    for(int i=0; i<plays.size(); i++) {
+        string genre = genres[i];
+        int play = plays[i];
+        total_play[genre] += play;
+        infos[genre].push_back({play, i});
+    }
+    vector<pair<int, string> > temp;
+    for(auto data : total_play) {
+        string genre = data.first;
+        int play = data.second;
+        temp.push_back({play, genre});
+    }
+    sort(temp.rbegin(), temp.rend()); // 총 실행 횟수 내림차순
+    for(auto t : temp) {
+        string genre = t.second;
+        vector<pair<int, int> > play_info = infos[genre];
+        sort(play_info.begin(), play_info.end(), compare);
+        int limit = min(2, (int)play_info.size());
+        for(int i=0; i<limit; i++) {
+            answer.push_back(play_info[i].second);
+        }
+    }
+    return answer;
+}
