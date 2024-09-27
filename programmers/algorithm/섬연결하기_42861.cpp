@@ -55,3 +55,70 @@ int solution(int n, vector<vector<int>> costs) {
     }
     return answer;
 }
+/**
+ * @file 섬연결하기_42861.cpp
+ * @brief 프로그래머스 lv.3 섬 연결하기
+ * @version 0.1
+ * @date 2024-09-27
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+#include <string>
+#include <vector>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+
+struct Info {
+    int node1, node2, cost;
+    bool operator<(Info other) const {
+        return cost > other.cost;
+    }
+};
+vector<int> parents;
+priority_queue<Info> pq;
+
+Info make_info(int node1, int node2, int cost) {
+    Info info;
+    info.node1 = node1;
+    info.node2 = node2;
+    info.cost = cost;
+    return info;
+}
+
+int find_parent(int node) {
+    if(node == parents[node]) return node;
+    return find_parent(parents[node]);
+}
+
+void make_union(int parent, int child) {
+    if (parent > child) swap(parent, child);
+    parent = find_parent(parent);
+    child = find_parent(child);
+    parents[child] = parent;
+}
+
+bool is_same_parent(int node1, int node2) {
+    int n1p = find_parent(node1);
+    int n2p = find_parent(node2);
+    return n1p == n2p;
+}
+
+int solution(int n, vector<vector<int>> costs) {
+    int answer = 0;
+    parents.resize(n);
+    for(int i=0; i<n; i++) parents[i] = i;
+    for(auto c : costs) {
+        pq.push(make_info(c[0], c[1], c[2]));
+    }
+    while(!pq.empty()) {
+        auto[node1, node2, cost] = pq.top(); pq.pop();
+        if (is_same_parent(node1, node2)) continue;
+        make_union(node1, node2);
+        answer += cost;
+    }
+    return answer;
+}
+
