@@ -46,57 +46,51 @@ vector<int> solution(vector<string> enroll, vector<string> referral, vector<stri
     }
     return answer;
 }
-
-/*
-오답코드
-
-#include <iostream>
+/**
+ * @file 다단계칫솔판매_77486.cpp
+ * @brief 프로그래머스 lv.3 다단계 칫솔 판매
+ * @version 0.1
+ * @date 2024-10-03
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ * 원트 컷~!
+ * 
+ */
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <iostream>
+
 using namespace std;
 
-unordered_map<string, vector<string> > map;
-unordered_map<string, int> money;
-vector<string> start;
+unordered_map<string, int> benefit;
+unordered_map<string, string> parents;
 
-int dfs(string person) {
-    for(auto next_person : map[person]) {
-        money[person] += dfs(next_person);
-    }
-    int total_money = money[person];
-    money[person] = total_money - (total_money / 10);
-    return total_money / 10;
-}
-
-void solve() {
-    for(int i=0; i<start.size(); i++) {
-        // dfs 시작
-        dfs(start[i]);
-    }
+void dfs(string name, int property) {
+    // 1. 본인 수익 저장
+    int other_benefit = property / 10;
+    int my_benefit = property  - other_benefit;
+    benefit[name] += my_benefit;
+    
+    // 2. 본인 부모한테 전달
+    string my_parent = parents[name];
+    if (my_parent == "-" || other_benefit == 0) return ;
+    dfs(my_parent, other_benefit);
 }
 
 vector<int> solution(vector<string> enroll, vector<string> referral, vector<string> seller, vector<int> amount) {
     vector<int> answer;
-    // 추천인 관계 설정
-    for(int i=0; i<enroll.size(); i++) {
+    for(int i=0; i<referral.size(); i++) {
         string child = enroll[i];
         string parent = referral[i];
-        if (parent == "-") {
-            // 최상단 노드부터 시작하기 위해서 따로 저장
-            start.push_back(child);
-            continue;
-        }
-        map[parent].push_back(child);
+        parents[child] = parent;
     }
-    // 초기 판매 실적 설정
     for(int i=0; i<seller.size(); i++) {
-        money[seller[i]] += (amount[i] * 100);
+        dfs(seller[i], amount[i] * 100);
     }
-    solve();
-    for(int i=0; i<enroll.size(); i++) {
-        answer.push_back(money[enroll[i]]);
+    for(auto person : enroll) {
+        answer.push_back(benefit[person]);
     }
     return answer;
 }
-*/
