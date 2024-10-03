@@ -110,3 +110,41 @@ int solution(int n, vector<int> stations, int w)
     return answer;
 }
 */
+
+
+
+/**
+ * @file 기지국설치_12979.cpp
+ * @brief 프로그래머스 lv.3 기지국 설치
+ * @version 0.1
+ * @date 2024-10-03
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int solution(int n, vector<int> stations, int w){
+    int answer = 0;
+    int pos = 1, coverage = 2*w + 1;
+    for(auto station : stations) {
+        int start = station - w;
+        int end = station + w;
+        if (pos < start) {
+            int dist = start - pos;
+            if (dist % coverage == 0) answer += dist / coverage;
+            else answer += (dist / coverage) + 1;
+        }
+        pos = end + 1;
+    }
+    if (pos <= n) {
+        int dist = n - pos + 1;
+        if (dist % coverage == 0) answer += dist / coverage;
+        else answer += (dist / coverage) + 1;
+    }
+    return answer;
+}
