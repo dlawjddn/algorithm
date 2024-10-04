@@ -52,5 +52,5 @@ int main(){
         }
     }
     if (*max_element(counts.begin(), counts.end()) != 0) cout<<"-1";
-    cout<<answer;
+    else cout<<answer;
 }
