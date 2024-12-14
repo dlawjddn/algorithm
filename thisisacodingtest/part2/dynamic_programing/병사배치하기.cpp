@@ -36,5 +36,5 @@ int main() {
     }
     // print_people();
     // print_dp();
-    cout<<people_cnt - dp.back();
+    cout << people_cnt - *max_element(dp.begin(), dp.end());
 }
