@@ -1,48 +1,43 @@
 #include <iostream>
-#include <vector>
+#include <string>
 #include <algorithm>
 
 using namespace std;
 
-vector<vector<int> > dp;
+#define MAX_DISTANCE 1001
 
-void print_dp() {
-    for(int y=0; y<dp.size(); y++) {
-        for(int x=0; x<dp[y].size(); x++) {
-            cout<<dp[y][x]<<" ";
-        }
-        cout<<"\n";
-    }
-}
+string input, target;
+int edit_distance[MAX_DISTANCE][MAX_DISTANCE];
 
 int main() {
-    string str1, str2; cin>>str1>>str2;
-    dp.resize(str1.size(), vector<int>(str2.size(), 0));
+    cin >> input >> target;
 
-    bool flag = false;
-    for(int y=0; y<str1.size(); y++) {
-        if (flag) dp[y][0] = 1;
-        if (str1[y] == str2[0]) {
-            flag = true;
-            dp[y][0] = 1;
+    int in_n = input.length();
+    int tar_n = target.length();
+
+    // 초기화
+    edit_distance[0][0] = 0;
+    for (int i = 1; i <= in_n; i++)
+        edit_distance[i][0] = i;
+    for (int i = 1; i <= tar_n; i++)
+        edit_distance[0][i] = i;
+
+    // 편집 거리 계산
+    for (int i = 1; i <= in_n; i++) {
+        for (int j = 1; j <= tar_n; j++) {
+            if (input[i - 1] == target[j - 1]) {
+                edit_distance[i][j] = edit_distance[i - 1][j - 1];
+            } else {
+                edit_distance[i][j] = min({
+                    edit_distance[i - 1][j],       // 삭제
+                    edit_distance[i][j - 1],       // 삽입
+                    edit_distance[i - 1][j - 1]    // 치환
+                }) + 1;
+            }
         }
     }
 
-    flag = false;
-    for(int x=0; x<str2.size(); x++) {
-        if (flag) dp[0][x] = 1;
-        if (str2[x] == str1[0]) {
-            flag = true;
-            dp[0][x] = 1;
-        }
-    }
-    //print_dp();
-    for(int y=1; y<dp.size(); y++) {
-        for(int x=1; x<dp[y].size(); x++) {
-            if (str1[y] == str2[x]) {
-                dp[y][x] = dp[y-1][x-1] + 1;
-            } else dp[y][x] = max(dp[y-1][x], dp[y][x-1]);
-        }
-    }
-    cout<<max(str1.size(), str2.size()) - dp[str1.size() - 1][str2.size() - 1];
+    // 결과 출력
+    cout << edit_distance[in_n][tar_n];
+    return 0;
 }
