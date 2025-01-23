@@ -60,13 +60,11 @@ int main(){
     reverse(connection.begin(), connection.end());
     for(int i=0; i<connection.size(); i++) {
         auto[node1, node2] = edges[connection[i]];
-        //print_cnt();
         int n1p = find_parent(node1);
         int n2p = find_parent(node2);
         if (n1p == n2p) continue;
         // 1. 연결되는 노드를 중심으로 망을 구성하는 노드의 개수 파악 및 크기 계산
         answer += (cnt[n1p] * cnt[n2p]);
-        //cout<<answer<<"\n";
         // 2. 노드 간 연결 추가
         make_union(n1p, n2p);
     }
