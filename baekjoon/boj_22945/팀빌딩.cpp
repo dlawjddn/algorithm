@@ -16,11 +16,9 @@ int main() {
     int left = 0, right = dev_cnt - 1;
     while(left < right) {
         int team = (right - left - 1) * min(devs[left], devs[right]);
-        if (answer < team) {
-            answer = team;
-            left++;
-        } else right--;
         answer = max(answer, team);
+        if (devs[left] < devs[right]) left++;
+        else right--;
     }
     cout<<answer;
 }
