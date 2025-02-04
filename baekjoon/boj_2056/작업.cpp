@@ -16,8 +16,7 @@ void init() {
     maps.resize(node_cnt + 1);
     indegree.resize(node_cnt + 1, 0);
     working_time.resize(node_cnt + 1, 0);
-    waiting_time.resize(node_cnt + 1, 0);
-    for(int i=1; i<=node_cnt; i++) parents[i] = i;
+waiting_time.resize(node_cnt + 1, 0);
 }
 
 int main() {
