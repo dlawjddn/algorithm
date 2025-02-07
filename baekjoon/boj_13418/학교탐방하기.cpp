@@ -17,7 +17,7 @@ struct Best {
         return cost < other.cost;
     }
 };
-int node_cnt, edge_cnt, worst_value = 0, best_value = 0;;
+int node_cnt, edge_cnt;
 vector<int> parents;
 priority_queue<Worst> pq_w;
 priority_queue<Best> pq_b;
@@ -57,7 +57,7 @@ int main() {
         auto[node1, node2, cost] = pq_w.top(); pq_w.pop();
         if (cant_union(node1, node2)) continue;
         make_union(node1, node2);
-        worst_value += cost;
+        if (cost == 0) worst_value++;
     }
 
     // 최선의 경우
@@ -66,7 +66,7 @@ int main() {
         auto[node1, node2, cost] = pq_b.top(); pq_b.pop();
         if (cant_union(node1, node2)) continue;
         make_union(node1, node2);
-        best_value += cost;
+        if (cost == 0) best_value++;
     }
 
     cout<<abs((worst_value * worst_value) - (best_value * best_value));
