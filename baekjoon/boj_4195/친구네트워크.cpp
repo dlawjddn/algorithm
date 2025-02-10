@@ -17,7 +17,6 @@ int find_parent(int node) {
 void make_union(int node1, int node2) {
     int n1p = find_parent(node1);
     int n2p = find_parent(node2);
-    //if (n1p > n2p) swap(n1p, n2p);
     if (n1p == n2p) return ;
     parents[n2p] = n1p;
     group_cnt[n1p] += group_cnt[n2p];
