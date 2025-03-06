@@ -32,7 +32,7 @@ int main() {
     for(int node = 1; node <= node_cnt; node++) {
         int temp_cost = 0;
         for(int nnode = 1; nnode <= node_cnt; nnode++) {
-            if (node == nnode) continue;
+            if (node == nnode || maps[node][nnode] == INF) continue;
             temp_cost += maps[node][nnode];
         }
         if (temp_cost < answer_cost) {
