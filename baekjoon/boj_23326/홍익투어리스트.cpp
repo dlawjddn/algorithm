@@ -9,6 +9,7 @@ int place_cnt, command_cnt;
 set<int> places;
 
 int main() {
+    ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0);
     cin>>place_cnt>>command_cnt;
     for(int i=0; i<place_cnt; i++) {
         int place; cin>>place;
@@ -37,15 +38,10 @@ int main() {
             }
         } else {
             auto it = places.lower_bound(pos);
-            if (it == places.end()) {
-                cout<<-1<<"\n";
-                continue;
+            if (it == places.end() || *it - pos >= place_cnt) {
+                cout << -1 << "\n";
             } else {
-                int dest = *it;
-                cout<<"dest: "<<dest<<"\n";
-                if (dest <= pos + place_cnt) {
-                    cout<<(dest % place_cnt)<<"\n";
-                } else cout<<-1<<"\n";
+                cout << (*it - pos) << "\n";
             }
         }
     }
