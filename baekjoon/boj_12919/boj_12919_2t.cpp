@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 queue<string> q;
